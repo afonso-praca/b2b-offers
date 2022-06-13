@@ -1,0 +1,8 @@
+{
+    "my-account-link.b2b-offers-link": {
+        "component": "B2BOffersLink"
+    },
+    "my-account-page.b2b-offers-page": {
+        "component": "B2BOffersPage"
+    }
+}
