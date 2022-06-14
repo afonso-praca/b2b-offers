@@ -1,6 +1,6 @@
 import React, { useState } from 'react'
 import type { FC } from 'react'
-import { Button, Card, PageHeader, Table, Input } from 'vtex.styleguide'
+import { Alert, Button, Card, PageHeader, Table, Input } from 'vtex.styleguide'
 
 const B2BOffersPage: FC = () => {
 
@@ -52,6 +52,10 @@ const B2BOffersPage: FC = () => {
     return (
         <div>
             <PageHeader title="B2B Offers" />
+            <Alert type="warning">
+                POC only. Not production ready
+            </Alert>
+            <br />
             {data.map((d, index) => (
                 <div>
                     <Card key={index}>
