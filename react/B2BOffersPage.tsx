@@ -1,20 +1,68 @@
-import React from 'react'
+import React, { useState } from 'react'
 import type { FC } from 'react'
-import { Card, PageHeader } from 'vtex.styleguide'
+import { Button, Card, PageHeader, Table, Input } from 'vtex.styleguide'
 
 const B2BOffersPage: FC = () => {
+
+    const customSchema = {
+        properties: {
+            skuId: {
+                title: 'SKU Id',
+                width: 250,
+            },
+            name: {
+                title: 'Name',
+                width: 600,
+            },
+            price: {
+                title: 'Price',
+                width: 100,
+            },
+            quantity: {
+                title: 'Quantity',
+                cellRenderer: ({ cellData, rowData }: any) => {
+                    console.log("cell data = ", cellData)
+                    console.log("row data = ", rowData)
+                    console.log("order qtd = ", orderQuantity)
+
+                    const key = rowData.offerId + '-' + rowData.skuId
+                    const obj: any = {}
+
+                    return (
+                        <Input
+                            placeholder="Quantity"
+                            size="small"
+                            onChange={(e: any) => {
+                                obj[key] = e.target.value
+                                setOrderQuantity(obj)
+                            }}
+                        />
+                    )
+                },
+            }
+        },
+    }
+
+    const [orderQuantity, setOrderQuantity] = useState({});
+
+
+    console.log(data)
+
+
     return (
         <div>
             <PageHeader title="B2B Offers" />
-            {data.map(d => (
+            {data.map((d, index) => (
                 <div>
-                    <Card key={d.name}>
+                    <Card key={index}>
                         <h3>{d.name}</h3>
                         <p>
-                            It’s all about being ready to grow and reach new levels. Have a solid
-                            foundation, modular thinking and flexible essence, and you’re building for
-                            scale. We are global but we’re audacious enough to aim for the stars.
+                            <Table
+                                schema={customSchema}
+                                items={d.items}
+                            />
                         </p>
+                        <Button variation="primary">Add To Cart</Button>
                     </Card>
                     <br />
                 </div>
@@ -22,7 +70,6 @@ const B2BOffersPage: FC = () => {
 
         </div>
     )
-    console.log(data)
 }
 
 export default B2BOffersPage
@@ -30,6 +77,7 @@ export default B2BOffersPage
 const data = [
     {
         name: "Mats Offers",
+        offerId: "123",
         salesChannel: "1",
         items: [
             {
@@ -40,7 +88,9 @@ const data = [
                 listPrice: "7920",
                 price: "6000",
                 minQuantity: 10,
-                maxQuantity: 100
+                maxQuantity: 100,
+                offerId: "123",
+
             },
             {
                 skuId: "10001517",
@@ -50,12 +100,14 @@ const data = [
                 listPrice: "11160",
                 price: "6500",
                 minQuantity: 10,
-                maxQuantity: 100
+                maxQuantity: 100,
+                offerId: "123",
             }
         ]
     },
     {
         name: "Mats Offers 2",
+        offerId: "321",
         salesChannel: "1",
         items: [
             {
@@ -66,7 +118,8 @@ const data = [
                 listPrice: "7920",
                 price: "6000",
                 minQuantity: 10,
-                maxQuantity: 100
+                maxQuantity: 100,
+                offerId: "321",
             },
             {
                 skuId: "10001517",
@@ -76,7 +129,8 @@ const data = [
                 listPrice: "11160",
                 price: "6500",
                 minQuantity: 10,
-                maxQuantity: 100
+                maxQuantity: 100,
+                offerId: "321",
             }
         ]
     }
