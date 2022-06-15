@@ -14,7 +14,7 @@ const B2BOffersLink: FC<Props> = ({ render }: Props) => {
   return render([
     {
       name: "B2B Offers",
-      path: '/b2b-offers',
+      path: '/offers',
     },
   ])
 }

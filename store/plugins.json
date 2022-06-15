@@ -1,4 +1,4 @@
 {
-    "my-account-menu > my-account-link": "my-account-link.b2b-offers-link",
-    "my-account-pages > my-account-page": "my-account-page.b2b-offers-page"
+    "my-account-menu > my-account-link": "my-account-link.offers-link",
+    "my-account-pages > my-account-page": "my-account-link.offers-page"
 }
