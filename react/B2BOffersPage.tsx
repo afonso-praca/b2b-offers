@@ -1,8 +1,97 @@
 import React, { useState } from 'react'
 import type { FC } from 'react'
 import { Alert, Button, Card, PageHeader, Table, Input } from 'vtex.styleguide'
+import { addToCart, setManualPrice } from 'vtex.checkout-resources/Mutations'
+import { useMutation } from 'react-apollo'
+import { usePixel } from 'vtex.pixel-manager/PixelContext'
+import { OrderForm } from 'vtex.order-manager'
+
+//import { ItemInput } from 'vtex.checkout-graphql'
 
 const B2BOffersPage: FC = () => {
+
+    const [orderQuantity, setOrderQuantity] = useState({});
+    const [addItems] = useMutation(addToCart)
+    const [setPrice] = useMutation(setManualPrice)
+    const { push } = usePixel()
+
+    const { setOrderForm }: any = OrderForm.useOrderForm()
+
+    const handleAddToCart = async (offerId: string, orderQuantity: any, data: any) => {
+        const items: any[] = [];
+        const orderQuantityKeys: string[] = Object.keys(orderQuantity);
+
+        orderQuantityKeys.forEach((qtdKey: string, index) => {
+            if (qtdKey.startsWith(offerId + "-")) {
+                const skuId: string = qtdKey.split("-")[1]
+                const quantity = orderQuantity[qtdKey]
+                const offer = data.find((item: any) => item.offerId === offerId)
+                const skuData = offer.items.find((item: any) => item.skuId === skuId)
+
+                console.log("skuId", skuId)
+                console.log("quantity", quantity)
+                console.log("offer", offer)
+                console.log("skuData", skuData)
+
+                items.push({
+                    id: parseInt(skuId),
+                    quantity: parseInt(quantity),
+                    seller: skuData.sellerId,
+                    price: skuData.price,
+                    index,
+                })
+            }
+        })
+
+        console.log("items", items)
+        await addItems({
+            variables: {
+                items: items.map((sku) => {
+                    return {
+                        id: sku.id,
+                        quantity: sku.quantity,
+                        seller: sku.seller,
+                        index: sku.index,
+                    }
+                }),
+                salesChannel: data.salesChannel
+            }
+        })
+
+        let setPriceResult: any = {}
+
+        for (let i = 0; i < items.length; i++) {
+            console.log("passou no for")
+            setPriceResult = await setPrice({
+                variables: {
+                    manualPriceInput: {
+                        itemIndex: items[i].index,
+                        price: parseInt(items[i].price)
+                    }
+                }
+            })
+        }
+
+        // Update OrderForm from the context
+        setPriceResult.data && setOrderForm(setPriceResult.data.setManualPrice)
+
+        const adjustSkuItemForPixelEvent = (item: any) => {
+            return {
+                skuId: item.id,
+                quantity: item.quantity,
+            }
+        }
+
+        const pixelEventItems = items.map(adjustSkuItemForPixelEvent)
+
+        console.log("pixelEventItems", pixelEventItems)
+
+        push({
+            event: 'addToCart',
+            items: pixelEventItems,
+        })
+
+    }
 
     const customSchema = {
         properties: {
@@ -22,19 +111,14 @@ const B2BOffersPage: FC = () => {
                 title: 'Quantity',
                 cellRenderer: ({ cellData, rowData }: any) => {
                     console.log("cell data = ", cellData)
-                    console.log("row data = ", rowData)
-                    console.log("order qtd = ", orderQuantity)
-
                     const key = rowData.offerId + '-' + rowData.skuId
-                    const obj: any = {}
-
                     return (
                         <Input
                             placeholder="Quantity"
                             size="small"
                             onChange={(e: any) => {
-                                obj[key] = e.target.value
-                                setOrderQuantity(obj)
+                                (orderQuantity as any)[key] = e.target.value
+                                setOrderQuantity(orderQuantity)
                             }}
                         />
                     )
@@ -42,12 +126,6 @@ const B2BOffersPage: FC = () => {
             }
         },
     }
-
-    const [orderQuantity, setOrderQuantity] = useState({});
-
-
-    console.log(data)
-
 
     return (
         <div>
@@ -66,7 +144,13 @@ const B2BOffersPage: FC = () => {
                                 items={d.items}
                             />
                         </p>
-                        <Button variation="primary">Add To Cart</Button>
+                        <Button
+                            type="number"
+                            variation="secondary"
+                            onClick={() => handleAddToCart(d.offerId, orderQuantity, data)}
+                            id={d.offerId}>
+                            Overwrite Your Cart
+                        </Button>
                     </Card>
                     <br />
                 </div>
@@ -120,7 +204,7 @@ const data = [
                 sellerId: "1",
                 name: "The Mat 3mm Made With FSC-Certified Rubber",
                 listPrice: "7920",
-                price: "6000",
+                price: "5000",
                 minQuantity: 10,
                 maxQuantity: 100,
                 offerId: "321",
@@ -131,7 +215,7 @@ const data = [
                 sellerId: "1",
                 name: "The (Big) Mat Made With FSC-Certified Rubber",
                 listPrice: "11160",
-                price: "6500",
+                price: "4500",
                 minQuantity: 10,
                 maxQuantity: 100,
                 offerId: "321",
